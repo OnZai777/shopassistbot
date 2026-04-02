@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="2.0">
+
+<!-- ================= GREETING ================= -->
+<category>
+    <pattern>HELLO</pattern>
+    <template>
+        Hello! Welcome to ShopAssist 🤖. What are you looking for today?
+    </template>
+</category>
+
+<category>
+    <pattern>HI</pattern>
+    <template><srai>HELLO</srai></template>
+</category>
+
+<category>
+    <pattern>HEY</pattern>
+    <template><srai>HELLO</srai></template>
+</category>
+
+<!-- ================= USER NAME ================= -->
+<category>
+    <pattern>MY NAME IS *</pattern>
+    <template>
+        <think><set name="username"><star/></set></think>
+        Nice to meet you, <get name="username"/>! How can I assist you today?
+    </template>
+</category>
+
+<!-- ================= PRODUCT SEARCH ================= -->
+<category>
+    <pattern>I WANT *</pattern>
+    <template>
+        Great! We have <star/> available. Would you like to know the price?
+    </template>
+</category>
+
+<category>
+    <pattern>DO YOU HAVE *</pattern>
+    <template>
+        Yes, we do have <star/> in stock. Would you like the price?
+    </template>
+</category>
+
+<!-- ================= PRICE ================= -->
+<category>
+    <pattern>PRICE OF *</pattern>
+    <template>
+        The price of <star/> starts from RM50 💰. Would you like to place an order?
+    </template>
+</category>
+
+<category>
+    <pattern>HOW MUCH IS *</pattern>
+    <template><srai>PRICE OF <star/></srai></template>
+</category>
+
+<!-- ================= ORDER ================= -->
+<category>
+    <pattern>I WANT TO BUY *</pattern>
+    <template>
+        Awesome! Your order for <star/> has been placed 🛒.
+        You will receive confirmation shortly.
+    </template>
+</category>
+
+<category>
+    <pattern>ORDER *</pattern>
+    <template><srai>I WANT TO BUY <star/></srai></template>
+</category>
+
+<!-- ================= ORDER STATUS ================= -->
+<category>
+    <pattern>WHERE IS MY ORDER</pattern>
+    <template>
+        Please provide your order ID so I can check the status 📦.
+    </template>
+</category>
+
+<category>
+    <pattern>MY ORDER ID IS *</pattern>
+    <template>
+        Thank you! Your order <star/> is currently being processed and will arrive soon 🚚.
+    </template>
+</category>
+
+<!-- ================= RECOMMENDATION ================= -->
+<category>
+    <pattern>RECOMMEND *</pattern>
+    <template>
+        Based on your interest in <star/>, I recommend checking out our best-selling items 🔥.
+    </template>
+</category>
+
+<!-- ================= STORE INFO ================= -->
+<category>
+    <pattern>OPENING HOURS</pattern>
+    <template>
+        Our store is open daily from 10 AM to 10 PM 🕙.
+    </template>
+</category>
+
+<category>
+    <pattern>LOCATION</pattern>
+    <template>
+        We are an online store 🌐. You can shop anytime!
+    </template>
+</category>
+
+<!-- ================= THANK YOU ================= -->
+<category>
+    <pattern>THANK YOU</pattern>
+    <template>
+        You're welcome! 😊 Happy shopping!
+    </template>
+</category>
+
+<!-- ================= DEFAULT FALLBACK ================= -->
+<category>
+    <pattern>*</pattern>
+    <template>
+        Sorry, I didn't understand that 🤔. Can you try asking in another way?
+    </template>
+</category>
+
+</aiml>
