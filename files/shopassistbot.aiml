@@ -1,4 +1,198 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aiml version="2.0">
-	<!-- insert your AIML categories here -->
+
+<!-- ===================== -->
+<!-- GREETING & CART INIT -->
+<!-- ===================== -->
+<category>
+    <pattern>HELLO</pattern>
+    <template>
+        <think><set name="cart"></set></think>
+        Hi! I am your AI Shopping Assistant 🤖  
+        I can recommend products based on your needs.  
+        Try: "I want electronics" or "Show categories"
+    </template>
+</category>
+
+<category>
+    <pattern>HI</pattern>
+    <template><srai>HELLO</srai></template>
+</category>
+
+<!-- ===================== -->
+<!-- CATEGORY SELECTION -->
+<!-- ===================== -->
+<category>
+    <pattern>SHOW CATEGORIES</pattern>
+    <template>
+        We have the following categories:  
+        1️⃣ Electronics  
+        2️⃣ Books  
+        3️⃣ Apparel  
+        4️⃣ Footwear  
+        Which one are you interested in?
+    </template>
+</category>
+
+<category>
+    <pattern>I WANT *</pattern>
+    <template>
+        <think><set name="category"><star/></set></think>
+        Great! You are looking for <get name="category"/> 👍  
+        What is your budget? (e.g., 500, 1000, 2000)
+    </template>
+</category>
+
+<!-- SYNONYMS -->
+<category>
+    <pattern>RECOMMEND *</pattern>
+    <template><srai>I WANT <star/></srai></template>
+</category>
+
+<category>
+    <pattern>SUGGEST *</pattern>
+    <template><srai>I WANT <star/></srai></template>
+</category>
+
+<!-- ===================== -->
+<!-- BUDGET INPUT -->
+<!-- ===================== -->
+<category>
+    <pattern>MY BUDGET IS *</pattern>
+    <template>
+        <think><set name="budget"><star/></set></think>
+        Processing your request...  
+        <srai>RECOMMEND BASED ON BUDGET</srai>
+    </template>
+</category>
+
+<!-- ===================== -->
+<!-- SMART RECOMMENDATION -->
+<!-- ===================== -->
+<category>
+    <pattern>RECOMMEND BASED ON BUDGET</pattern>
+    <template>
+        <condition name="category">
+
+            <li value="ELECTRONICS">
+                <condition name="budget">
+                    <li value="0..500">Budget Earphones 🎧</li>
+                    <li value="501..1000">Speaker 🔊</li>
+                    <li value="1001..2000">Headphones 🎧</li>
+                    <li>Premium Electronics 💎</li>
+                </condition>
+            </li>
+
+            <li value="BOOKS">
+                <condition name="budget">
+                    <li value="0..100">Textbooks 📚</li>
+                    <li value="101..500">Comics 📖</li>
+                    <li>Premium Books 📚🔥</li>
+                </condition>
+            </li>
+
+            <li value="APPAREL">
+                <condition name="budget">
+                    <li value="0..500">T-shirt 👕</li>
+                    <li value="501..1000">Sweater 🧥</li>
+                    <li value="1001..2000">Dress 👗</li>
+                    <li>Luxury Apparel ✨</li>
+                </condition>
+            </li>
+
+            <li value="FOOTWEAR">
+                <condition name="budget">
+                    <li value="0..500">Sandals 🩴</li>
+                    <li value="501..1000">Formal Shoes 👞</li>
+                    <li value="1001..2000">Hiking Shoes 🥾</li>
+                    <li>Premium Footwear 👟</li>
+                </condition>
+            </li>
+
+            <li>Sorry 😢 I couldn’t find a match.</li>
+
+        </condition>
+
+        <think><set name="last_recommendation"><get name="category"/> item</set></think>
+        Would you like to add it to your cart? (yes/no)
+    </template>
+</category>
+
+<!-- ===================== -->
+<!-- CART MANAGEMENT -->
+<!-- ===================== -->
+<category>
+    <pattern>YES</pattern>
+    <that>Would you like to add it to your cart? (yes/no)</that>
+    <template>
+        <think>
+            <set name="cart"><get name="cart"/> <get name="last_recommendation"/></set>
+        </think>
+        ✅ <get name="last_recommendation"/> added to your cart!  
+        You can "View cart" or "Continue shopping".
+    </template>
+</category>
+
+<category>
+    <pattern>NO</pattern>
+    <that>Would you like to add it to your cart? (yes/no)</that>
+    <template>
+        No worries! You can continue shopping or view categories.
+    </template>
+</category>
+
+<category>
+    <pattern>VIEW CART</pattern>
+    <template>
+        🛒 Your cart contains: <get name="cart"/>  
+        Would you like to checkout? (yes/no)
+    </template>
+</category>
+
+<category>
+    <pattern>YES</pattern>
+    <that>Would you like to checkout? (yes/no)</that>
+    <template>
+        🧾 Your order (<get name="cart"/>) has been placed successfully!  
+        Thank you for shopping with us 🎉  
+        <think><set name="cart"></set></think>
+    </template>
+</category>
+
+<category>
+    <pattern>NO</pattern>
+    <that>Would you like to checkout? (yes/no)</that>
+    <template>
+        Sure! Continue shopping and tell me what else you want.
+    </template>
+</category>
+
+<!-- ===================== -->
+<!-- SMALL TALK -->
+<!-- ===================== -->
+<category>
+    <pattern>HOW ARE YOU</pattern>
+    <template>
+        I'm great! 😊 Ready to help you shop. What would you like today?
+    </template>
+</category>
+
+<category>
+    <pattern>THANK YOU</pattern>
+    <template>
+        You're welcome! Happy shopping! 🛍️
+    </template>
+</category>
+
+<!-- ===================== -->
+<!-- FALLBACK -->
+<!-- ===================== -->
+<category>
+    <pattern>*</pattern>
+    <template>
+        Sorry, I didn't understand that 😅  
+        Try: "I want electronics", "Show categories", or "My budget is 1000"
+    </template>
+</category>
+
 </aiml>
