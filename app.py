@@ -7,7 +7,7 @@ import os
 def get_bot():
     kernel = aiml.Kernel()
     # Path to your AIML file
-    aiml_path = "chatbot.aiml"
+    aiml_path = "shopassistbot.aiml"
     if os.path.exists(aiml_path):
         kernel.learn(aiml_path)
     else:
