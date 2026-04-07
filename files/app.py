@@ -1,35 +1,7 @@
 import streamlit as st
 import aiml
 import pandas as pd
-
-# -----------------------------
-# 🔧 Normalize user input
-# -----------------------------
-def normalize_input(text):
-    # We remove .upper() here to let the AIML kernel handle case-insensitivity 
-    # and focus only on synonym replacement.
-    text = text.lower().strip()
-
-    synonyms = {
-        "electronic": "electronics",
-        "device": "electronics",
-        "gadget": "electronics",
-        "phone": "electronics",
-        "laptop": "electronics",
-        "book": "books",
-        "novel": "books",
-        "comic": "books",
-        "clothes": "apparel",
-        "shirt": "apparel",
-        "shoe": "footwear",
-        "shoes": "footwear",
-        "sneaker": "footwear"
-    }
-
-    words = text.split()
-    words = [synonyms.get(word, word) for word in words]
-    return " ".join(words)
-
+import os
 
 # -----------------------------
 # Load AIML bot
@@ -37,100 +9,91 @@ def normalize_input(text):
 @st.cache_resource
 def load_bot():
     kernel = aiml.Kernel()
-    # Ensure the filename matches exactly
-    kernel.learn("shopassistbot.aiml")
+    # Check if file exists to avoid silent errors
+    if os.path.exists("shopassistbot.aiml"):
+        kernel.learn("shopassistbot.aiml")
+    else:
+        st.error("Error: 'shopassistbot.aiml' not found in the directory!")
     return kernel
 
 bot = load_bot()
-
 
 # -----------------------------
 # Load Dataset
 # -----------------------------
 @st.cache_data
 def load_data():
-    # Make sure this path exists in your directory
-    df = pd.read_csv("files/diversified_ecommerce_dataset.csv")
-    return df
+    try:
+        df = pd.read_csv("files/diversified_ecommerce_dataset.csv")
+        return df
+    except Exception as e:
+        st.error(f"Could not load CSV: {e}")
+        return pd.DataFrame()
 
 data = load_data()
-
 
 # -----------------------------
 # Recommendation Function
 # -----------------------------
 def get_recommendation(category, budget):
     try:
-        budget = float(budget)
+        budget_val = float(budget)
     except:
-        return "⚠️ Please enter a valid numerical budget (e.g., 500)."
+        return "⚠️ Please enter a numerical budget."
 
-    # Filter data based on category (case-insensitive) and price
+    # Filter by category and price
     filtered = data[
         (data["Category"].str.upper() == category.upper()) &
-        (data["Price"] <= budget)
+        (data["Price"] <= budget_val)
     ]
 
     if filtered.empty:
-        return f"😅 No products found in {category} within RM{budget}."
+        return f"😅 No products found in {category} under RM{budget}."
 
     # Sort by popularity and get top 3
-    filtered = filtered.sort_values(by="Popularity Index", ascending=False)
-    top = filtered.head(3)
+    top = filtered.sort_values(by="Popularity Index", ascending=False).head(3)
 
     result = f"✨ Top recommendations for {category}:\n\n"
     for _, row in top.iterrows():
         result += f"👉 {row['Product Name']} (RM{row['Price']}) ⭐{row['Popularity Index']}\n"
-
     return result
 
-
 # -----------------------------
-# UI Setup
+# UI
 # -----------------------------
-st.set_page_config(page_title="Smart Shopping Assistant", page_icon="🛍️")
 st.title("🛍️ Smart Shopping Assistant")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat history
+# Display history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+        st.write(msg["content"])
 
 # Input
-user_input = st.chat_input("Type your message (e.g., 'I want electronics' or 'Show categories')")
+user_input = st.chat_input("Say 'Hello' or 'I want electronics'")
 
-# -----------------------------
-# Handle Input
-# -----------------------------
 if user_input:
-    # 1. Normalize for synonyms
-    clean_input = normalize_input(user_input)
-
-    # 2. Get response from AIML
-    response = bot.respond(clean_input)
-
-    # 3. Check if input is a budget (digit) and we have a category stored
-    if user_input.strip().isdigit():
-        current_category = bot.getPredicate("category")
-        if current_category:
-            response = get_recommendation(current_category, user_input.strip())
-        else:
-            response = "What category are you interested in first? (Electronics, Books, etc.)"
-
-    # 4. Fallback if AIML doesn't match anything
-    if not response or response.strip() == "":
-        response = "😅 Try saying 'I want electronics' or 'Show categories' to get started!"
-
-    # Save and Refresh
+    # 1. Store user message
     st.session_state.messages.append({"role": "user", "content": user_input})
+    
+    # 2. Get AIML response (AIML is case-insensitive by default)
+    response = bot.respond(user_input)
+
+    # 3. Logic for Recommendation Engine
+    # If the input is just a number, we treat it as a budget request
+    if user_input.strip().isdigit():
+        stored_cat = bot.getPredicate("category")
+        if stored_cat:
+            response = get_recommendation(stored_cat, user_input.strip())
+        else:
+            response = "I need to know what you are looking for first! Try 'I want electronics'."
+
+    # 4. Fallback if AIML returned nothing
+    if not response or response.strip() == "":
+        response = "😅 Try saying 'Hello', 'Show categories', or 'I want electronics'."
+
+    # 5. Store and display bot message
     st.session_state.messages.append({"role": "assistant", "content": response})
     st.rerun()
-
-# Sidebar controls
-with st.sidebar:
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.messages = []
-        st.rerun()
