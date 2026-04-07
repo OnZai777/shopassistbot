@@ -1,20 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <aiml version="1.0.1" encoding="UTF-8">
 
 <category>
     <pattern>HELLO</pattern>
-    <template>Hey there! 👋 Welcome! [cite: 2] Try: I WANT ELECTRONICS</template>
+    <template>
+        Hey there! 👋 Welcome! 
+        Try:
+        • I want electronics
+        • Show categories
+    </template>
 </category>
 
-<category>
-    <pattern>HI</pattern>
-    <template><srai>HELLO</srai></template>
-</category>
+<category><pattern>HI</pattern><template><srai>HELLO</srai></template></category>
 
 <category>
     <pattern>I WANT ELECTRONICS</pattern>
     <template>
         <think><set name="category">ELECTRONICS</set></think>
-        Great! What is your budget? [cite: 3]
+        Great! What's your budget? [cite: 3]
     </template>
 </category>
 
@@ -22,7 +25,7 @@
     <pattern>I WANT BOOKS</pattern>
     <template>
         <think><set name="category">BOOKS</set></think>
-        Nice! What is your budget? [cite: 4]
+        Nice! What's your budget? [cite: 4]
     </template>
 </category>
 
