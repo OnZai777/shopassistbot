@@ -3,47 +3,43 @@ import aiml
 import pandas as pd
 import os
 
+# --- PATH SETUP ---
+base_path = os.path.dirname(os.path.abspath(__file__))
+aiml_path = os.path.join(base_path, "shopassistbot.aiml")
+csv_path = os.path.join(base_path, "files", "diversified_ecommerce_dataset.csv")
+
 # -----------------------------
 # 🤖 Load AIML bot
 # -----------------------------
-@st.cache_resource
-def load_bot():
+def init_bot():
     kernel = aiml.Kernel()
-    
-    # Get the absolute path of the current directory
-    base_path = os.path.dirname(os.path.abspath(__file__))
-    aiml_path = os.path.join(base_path, "shopassistbot.aiml")
-    
     if os.path.exists(aiml_path):
+        # We use learn() directly to ensure it reads the latest file
         kernel.learn(aiml_path)
-        st.sidebar.success("✅ shopassistbot.aiml loaded!")
+        return kernel
     else:
-        st.sidebar.error("❌ shopassistbot.aiml NOT FOUND!")
-        
-    return kernel
+        st.error(f"Missing file at: {aiml_path}")
+        return None
 
-bot = load_bot()
+if "bot" not in st.session_state:
+    st.session_state.bot = init_bot()
 
 # -----------------------------
 # 📊 Load Dataset
 # -----------------------------
 @st.cache_data
 def load_data():
-    try:
-        # Standardize path for the CSV
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        csv_path = os.path.join(base_path, "files", "diversified_ecommerce_dataset.csv")
+    if os.path.exists(csv_path):
         return pd.read_csv(csv_path)
-    except:
-        return pd.DataFrame()
+    return pd.DataFrame()
 
-data = load_data()
+df = load_data()
 
 # 💡 Recommendation Logic
 def get_recommendation(category, budget):
     try:
         budget_val = float(budget)
-        filtered = data[(data["Category"].str.upper() == category.upper()) & (data["Price"] <= budget_val)]
+        filtered = df[(df["Category"].str.upper() == category.upper()) & (df["Price"] <= budget_val)]
         if filtered.empty:
             return f"😅 No {category} found under RM{budget_val}."
         top = filtered.sort_values(by="Popularity Index", ascending=False).head(3)
@@ -59,6 +55,16 @@ def get_recommendation(category, budget):
 # -----------------------------
 st.title("🛍️ Smart Shopping Assistant")
 
+# Sidebar Debugging
+with st.sidebar:
+    if st.button("🔄 Force Reload AIML"):
+        st.session_state.bot = init_bot()
+        st.success("Bot reloaded!")
+    if os.path.exists(aiml_path):
+        st.write("✅ AIML file detected.")
+    else:
+        st.write("❌ AIML file NOT found.")
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -66,23 +72,27 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
-user_input = st.chat_input("Say 'HELLO' to start")
+user_input = st.chat_input("Type 'HELLO'")
 
 if user_input:
     st.session_state.messages.append({"role": "user", "content": user_input})
     
-    # AIML lookup (Send as Uppercase to match pattern exactly)
-    response = bot.respond(user_input.upper())
+    # Send to AIML (using .upper() to guarantee match)
+    response = ""
+    if st.session_state.bot:
+        response = st.session_state.bot.respond(user_input.upper())
 
-    # Budget logic
+    # Budget logic: If input is a number
     if user_input.strip().isdigit():
-        cat = bot.getPredicate("category")
+        cat = st.session_state.bot.getPredicate("category")
         if cat:
             response = get_recommendation(cat, user_input.strip())
+        else:
+            response = "I don't know what you're looking for! Say 'I want electronics' first."
 
-    # The Fallback
+    # Final Fallback
     if not response or response.strip() == "":
-        response = "😅 I didn't find a match in my AIML file. Try 'HELLO'."
+        response = "😅 My brain is empty! Make sure the AIML file has a pattern for this."
 
     st.session_state.messages.append({"role": "assistant", "content": response})
     st.rerun()
