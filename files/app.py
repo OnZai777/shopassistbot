@@ -6,6 +6,8 @@ import pandas as pd
 # 🔧 Normalize user input
 # -----------------------------
 def normalize_input(text):
+    # We remove .upper() here to let the AIML kernel handle case-insensitivity 
+    # and focus only on synonym replacement.
     text = text.lower().strip()
 
     synonyms = {
@@ -14,14 +16,11 @@ def normalize_input(text):
         "gadget": "electronics",
         "phone": "electronics",
         "laptop": "electronics",
-
         "book": "books",
         "novel": "books",
         "comic": "books",
-
         "clothes": "apparel",
         "shirt": "apparel",
-
         "shoe": "footwear",
         "shoes": "footwear",
         "sneaker": "footwear"
@@ -29,8 +28,7 @@ def normalize_input(text):
 
     words = text.split()
     words = [synonyms.get(word, word) for word in words]
-
-    return " ".join(words).upper()
+    return " ".join(words)
 
 
 # -----------------------------
@@ -39,6 +37,7 @@ def normalize_input(text):
 @st.cache_resource
 def load_bot():
     kernel = aiml.Kernel()
+    # Ensure the filename matches exactly
     kernel.learn("shopassistbot.aiml")
     return kernel
 
@@ -50,6 +49,7 @@ bot = load_bot()
 # -----------------------------
 @st.cache_data
 def load_data():
+    # Make sure this path exists in your directory
     df = pd.read_csv("files/diversified_ecommerce_dataset.csv")
     return df
 
@@ -63,21 +63,22 @@ def get_recommendation(category, budget):
     try:
         budget = float(budget)
     except:
-        return "⚠️ Please enter a valid number."
+        return "⚠️ Please enter a valid numerical budget (e.g., 500)."
 
+    # Filter data based on category (case-insensitive) and price
     filtered = data[
-        (data["Category"].str.upper() == category) &
+        (data["Category"].str.upper() == category.upper()) &
         (data["Price"] <= budget)
     ]
 
     if filtered.empty:
-        return "😅 No products found within your budget."
+        return f"😅 No products found in {category} within RM{budget}."
 
+    # Sort by popularity and get top 3
     filtered = filtered.sort_values(by="Popularity Index", ascending=False)
-
     top = filtered.head(3)
 
-    result = "✨ Top recommendations:\n\n"
+    result = f"✨ Top recommendations for {category}:\n\n"
     for _, row in top.iterrows():
         result += f"👉 {row['Product Name']} (RM{row['Price']}) ⭐{row['Popularity Index']}\n"
 
@@ -85,55 +86,51 @@ def get_recommendation(category, budget):
 
 
 # -----------------------------
-# UI
+# UI Setup
 # -----------------------------
+st.set_page_config(page_title="Smart Shopping Assistant", page_icon="🛍️")
 st.title("🛍️ Smart Shopping Assistant")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat
+# Display chat history
 for msg in st.session_state.messages:
-    if msg["role"] == "user":
-        st.markdown(f"👤 **You:** {msg['content']}")
-    else:
-        st.markdown(f"🤖 **Bot:** {msg['content']}")
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
 # Input
-with st.form("chat_form", clear_on_submit=True):
-    user_input = st.text_input("Type your message:")
-    submitted = st.form_submit_button("Send")
+user_input = st.chat_input("Type your message (e.g., 'I want electronics' or 'Show categories')")
 
 # -----------------------------
 # Handle Input
 # -----------------------------
-if submitted and user_input:
+if user_input:
+    # 1. Normalize for synonyms
     clean_input = normalize_input(user_input)
 
-    # AIML response
+    # 2. Get response from AIML
     response = bot.respond(clean_input)
 
-    # Check if user gave budget (number)
+    # 3. Check if input is a budget (digit) and we have a category stored
     if user_input.strip().isdigit():
-        category = bot.getPredicate("category")
-        budget = user_input.strip()
+        current_category = bot.getPredicate("category")
+        if current_category:
+            response = get_recommendation(current_category, user_input.strip())
+        else:
+            response = "What category are you interested in first? (Electronics, Books, etc.)"
 
-        if category:
-            response = get_recommendation(category, budget)
+    # 4. Fallback if AIML doesn't match anything
+    if not response or response.strip() == "":
+        response = "😅 Try saying 'I want electronics' or 'Show categories' to get started!"
 
-    # Fallback
-    if response.strip() == "":
-        response = "😅 Try 'I want electronics' or 'Show categories'."
-
-    # Save messages
+    # Save and Refresh
     st.session_state.messages.append({"role": "user", "content": user_input})
-    st.session_state.messages.append({"role": "bot", "content": response})
-
+    st.session_state.messages.append({"role": "assistant", "content": response})
     st.rerun()
 
-# Clear chat
-if st.button("🗑️ Clear Chat"):
-    st.session_state.messages = []
-    st.rerun()
-
-
+# Sidebar controls
+with st.sidebar:
+    if st.button("🗑️ Clear Chat"):
+        st.session_state.messages = []
+        st.rerun()
