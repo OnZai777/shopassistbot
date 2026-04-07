@@ -1,2 +1,2 @@
-streamlit
-aiml
+streamlit==1.33.0
+python-aiml==0.9.3
