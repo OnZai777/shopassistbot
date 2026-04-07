@@ -3,17 +3,19 @@ import aiml
 import pandas as pd
 import os
 
+# --- DEBUGGING: Check if file exists ---
+aiml_file = "shopassistbot.aiml"
+if not os.path.exists(aiml_file):
+    st.error(f"🚨 CRITICAL ERROR: '{aiml_file}' not found in the current folder!")
+
 # -----------------------------
 # 🤖 Load AIML bot
 # -----------------------------
 @st.cache_resource
 def load_bot():
     kernel = aiml.Kernel()
-    # Check if the file exists to prevent silent crashes
-    if os.path.exists("shopassistbot.aiml"):
-        kernel.learn("shopassistbot.aiml")
-    else:
-        st.error("❌ 'shopassistbot.aiml' not found! Please ensure the file is in the same folder.")
+    # Forces the kernel to learn the file
+    kernel.learn(aiml_file)
     return kernel
 
 bot = load_bot()
@@ -24,12 +26,11 @@ bot = load_bot()
 @st.cache_data
 def load_data():
     try:
-        # Ensure your CSV is in a folder named 'files'
+        # Note: Ensure the 'files' folder exists!
         df = pd.read_csv("files/diversified_ecommerce_dataset.csv")
         return df
-    except Exception as e:
-        st.error(f"❌ Dataset error: {e}")
-        return pd.DataFrame()
+    except Exception:
+        return pd.DataFrame(columns=["Product Name", "Category", "Price", "Popularity Index"])
 
 data = load_data()
 
@@ -39,63 +40,52 @@ data = load_data()
 def get_recommendation(category, budget):
     try:
         budget_val = float(budget)
+        filtered = data[
+            (data["Category"].str.upper() == category.upper()) & 
+            (data["Price"] <= budget_val)
+        ]
+        if filtered.empty:
+            return f"😅 No products found in {category} under RM{budget_val}."
+        
+        top = filtered.sort_values(by="Popularity Index", ascending=False).head(3)
+        result = f"✨ Top {category} recommendations:\n\n"
+        for _, row in top.iterrows():
+            result += f"👉 {row['Product Name']} (RM{row['Price']}) ⭐{row['Popularity Index']}\n"
+        return result
     except:
-        return "⚠️ Please enter a valid number for your budget."
-
-    # Filter by category and price limit
-    filtered = data[
-        (data["Category"].str.upper() == category.upper()) &
-        (data["Price"] <= budget_val)
-    ]
-
-    if filtered.empty:
-        return f"😅 Sorry, I couldn't find any {category} under RM{budget_val}."
-
-    # Sort by Popularity and take top 3
-    top = filtered.sort_values(by="Popularity Index", ascending=False).head(3)
-
-    result = f"✨ Here are the top {category} recommendations within your budget:\n\n"
-    for _, row in top.iterrows():
-        result += f"👉 **{row['Product Name']}** - RM{row['Price']} (Rating: {row['Popularity Index']})\n"
-    return result
+        return "⚠️ Please enter a number for the budget."
 
 # -----------------------------
-# 🖥️ User Interface
+# 🖥️ UI
 # -----------------------------
 st.title("🛍️ Smart Shopping Assistant")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat history
+# Display History
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
-# User Chat Input
-user_input = st.chat_input("Type 'Hello', 'Show categories', or 'I want electronics'...")
+user_input = st.chat_input("Type 'Hello'...")
 
 if user_input:
-    # 1. Show user message
     st.session_state.messages.append({"role": "user", "content": user_input})
     
-    # 2. Process with AIML
-    # We send raw input; aiml-python handles case-insensitivity automatically.
-    response = bot.respond(user_input)
+    # 1. Get AIML response
+    # We strip and upper the input for the most reliable pattern matching
+    response = bot.respond(user_input.upper())
 
-    # 3. Check for Recommendation Trigger
-    # If the user enters a number and we have a category stored in AIML memory
+    # 2. Check if input is a budget
     if user_input.strip().isdigit():
-        stored_category = bot.getPredicate("category")
-        if stored_category:
-            response = get_recommendation(stored_category, user_input.strip())
-        else:
-            response = "I'm not sure what you're looking for yet. Try saying 'I want electronics' first!"
+        cat = bot.getPredicate("category")
+        if cat:
+            response = get_recommendation(cat, user_input.strip())
 
-    # 4. Fallback for empty responses
+    # 3. Final Fallback
     if not response or response.strip() == "":
-        response = "😅 I'm not sure how to help with that. Try 'Show categories'!"
+        response = "😅 I'm still learning! Try 'HELLO' or 'I WANT ELECTRONICS'."
 
-    # 5. Show bot response
     st.session_state.messages.append({"role": "assistant", "content": response})
     st.rerun()
