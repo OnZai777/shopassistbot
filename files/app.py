@@ -50,7 +50,7 @@ bot = load_bot()
 # -----------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("diversified_ecommerce_dataset.csv")
+    df = pd.read_csv("files/diversified_ecommerce_dataset.csv")
     return df
 
 data = load_data()
