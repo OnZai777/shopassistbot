@@ -1,41 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aiml version="1.0.1" encoding="UTF-8">
 
-<!-- NORMALIZATION -->
-<category><pattern>ELECTRONIC</pattern><template><srai>ELECTRONICS</srai></template></category>
-<category><pattern>BOOK</pattern><template><srai>BOOKS</srai></template></category>
-<category><pattern>SHOE</pattern><template><srai>FOOTWEAR</srai></template></category>
-
-<!-- GREETING -->
 <category>
     <pattern>HELLO</pattern>
     <template>
-        <think><set name="cart"></set></think>
-        Hey there! 👋 Welcome!
-
-        Try:
-        • I want electronics
-        • Show categories
+        Hey there! 👋 Welcome! [cite: 2] Try:
+        - I want electronics
+        - Show categories
     </template>
 </category>
 
 <category><pattern>HI</pattern><template><srai>HELLO</srai></template></category>
+<category><pattern>HEY</pattern><template><srai>HELLO</srai></template></category>
 
-<!-- CATEGORY -->
 <category>
     <pattern>SHOW CATEGORIES</pattern>
     <template>
-        Categories:
-        Electronics, Books, Apparel, Footwear
+        We have: Electronics, Books, Apparel, and Footwear. Which one do you prefer?
     </template>
 </category>
 
-<!-- CATEGORY SET -->
 <category>
     <pattern>I WANT ELECTRONICS</pattern>
     <template>
         <think><set name="category">ELECTRONICS</set></think>
-        Great! What's your budget?
+        Great! What's your budget for Electronics? [cite: 3]
     </template>
 </category>
 
@@ -43,7 +32,7 @@
     <pattern>I WANT BOOKS</pattern>
     <template>
         <think><set name="category">BOOKS</set></think>
-        Nice! What's your budget?
+        Nice! What's your budget for Books? [cite: 4]
     </template>
 </category>
 
@@ -51,7 +40,7 @@
     <pattern>I WANT APPAREL</pattern>
     <template>
         <think><set name="category">APPAREL</set></think>
-        Good choice! What's your budget?
+        Good choice! What's your budget for Apparel? [cite: 5]
     </template>
 </category>
 
@@ -59,28 +48,14 @@
     <pattern>I WANT FOOTWEAR</pattern>
     <template>
         <think><set name="category">FOOTWEAR</set></think>
-        Nice! What's your budget?
+        Nice! What's your budget for Footwear? [cite: 6]
     </template>
 </category>
 
-<!-- UNKNOWN CATEGORY -->
 <category>
     <pattern>I WANT *</pattern>
     <template>
-        Please choose:
-        electronics, books, apparel, footwear
-    </template>
-</category>
-
-<!-- BUDGET -->
-<category>
-    <pattern>*</pattern>
-    <template>
-        <think>
-            <condition>
-                <li><set name="budget"><input/></set></li>
-            </condition>
-        </think>
+        I'm sorry, I don't have recommendations for that yet. Please choose: Electronics, Books, Apparel, or Footwear.
     </template>
 </category>
 
