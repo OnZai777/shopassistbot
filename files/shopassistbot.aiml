@@ -1,103 +1,79 @@
-import streamlit as st
-import aiml
-import pandas as pd
-import os
+<?xml version="1.0" encoding="UTF-8"?>
+<aiml version="1.0.1" encoding="UTF-8">
 
-# --- 1. CONFIGURATION & LOADING ---
-st.set_page_config(page_title="ShopAssist Pro", page_icon="🛒", layout="centered")
+<category>
+    <pattern>HELLO</pattern>
+    <template>
+        Hi there! 👋 Welcome to ShopAssist. I can recommend products from our catalog. 
+        You can ask to "Show categories" or tell me what you're looking for (e.g., "I want books").
+    </template>
+</category>
 
-# Paths for files
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-AIML_FILE = os.path.join(BASE_DIR, "shopassistbot.aiml")
-# Update this path if your CSV is in a subfolder like 'files/'
-DATA_CSV = os.path.join(BASE_DIR, "diversified_ecommerce_dataset.csv")
+<category><pattern>HI</pattern><template><srai>HELLO</srai></template></category>
+<category><pattern>HEY</pattern><template><srai>HELLO</srai></template></category>
 
-@st.cache_resource
-def load_aiml_kernel():
-    """Initializes the AIML kernel and learns the logic file."""
-    kernel = aiml.Kernel()
-    if os.path.exists(AIML_FILE):
-        kernel.learn(AIML_FILE)
-    else:
-        st.error(f"❌ Error: {AIML_FILE} not found. Please ensure the file exists.")
-    return kernel
+<category>
+    <pattern>SHOW CATEGORIES</pattern>
+    <template>
+        We currently have the following categories available:
+        • Electronics 📱
+        • Apparel 👕
+        • Footwear 👟
+        • Books 📚
+        • Home Appliances 🏠
+        Which one are you interested in?
+    </template>
+</category>
 
-@st.cache_data
-def load_ecommerce_data():
-    """Loads and caches the product dataset."""
-    if os.path.exists(DATA_CSV):
-        return pd.read_csv(DATA_CSV)
-    else:
-        st.error(f"❌ Error: Dataset not found at {DATA_CSV}")
-        return pd.DataFrame()
+<category><pattern>WHAT CATEGORIES *</pattern><template><srai>SHOW CATEGORIES</srai></template></category>
+<category><pattern>LIST CATEGORIES</pattern><template><srai>SHOW CATEGORIES</srai></template></category>
 
-# Initialize Bot and Data
-bot = load_aiml_kernel()
-df = load_ecommerce_data()
+<category>
+    <pattern>I WANT ELECTRONICS</pattern>
+    <template>
+        <think><set name="category">Electronics</set></think>
+        Excellent choice. 📱 What is your maximum budget for Electronics?
+    </template>
+</category>
 
-# --- 2. LOGIC FUNCTIONS ---
-def get_recommendations(category, budget):
-    """Filters data based on category and budget, sorted by popularity."""
-    try:
-        max_price = float(budget)
-        # Case-insensitive category match
-        results = df[
-            (df['Category'].str.upper() == category.upper()) & 
-            (df['Price'] <= max_price)
-        ]
-        
-        if results.empty:
-            return f"I couldn't find any {category} within a budget of RM{max_price:.2f}. Would you like to try a different budget or category?"
-        
-        # Sort by popularity (descending) and take top 3
-        top_picks = results.sort_values(by="Popularity Index", ascending=False).head(3)
-        
-        response = f"✨ Here are my top {category} picks under RM{max_price:.2f}:\n\n"
-        for _, row in top_picks.iterrows():
-            response += f"🛍️ **{row['Product Name']}**\n"
-            response += f"💰 Price: RM{row['Price']:.2f} | ⭐ Popularity: {row['Popularity Index']}/100\n\n"
-        return response
-    except ValueError:
-        return "⚠️ Please provide a valid numerical budget (e.g., 500)."
+<category>
+    <pattern>I WANT APPAREL</pattern>
+    <template>
+        <think><set name="category">Apparel</set></think>
+        Great! 👕 What is your budget for Apparel items?
+    </template>
+</category>
 
-# --- 3. CHAT INTERFACE ---
-st.title("🛒 ShopAssist AI")
-st.markdown("Your personal shopping assistant for Electronics, Apparel, Footwear, Books, and more.")
+<category>
+    <pattern>I WANT FOOTWEAR</pattern>
+    <template>
+        <think><set name="category">Footwear</set></think>
+        Nice! 👟 How much are you looking to spend on Footwear?
+    </template>
+</category>
 
-# Initialize message history
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello! 👋 I'm ShopAssist. I can help you find products. Try saying **'Show categories'** or **'I want electronics'**."}]
+<category>
+    <pattern>I WANT BOOKS</pattern>
+    <template>
+        <think><set name="category">Books</set></think>
+        Books are a great choice! 📚 What is your budget?
+    </template>
+</category>
 
-# Display chat history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+<category>
+    <pattern>I WANT HOME APPLIANCES</pattern>
+    <template>
+        <think><set name="category">Home Appliances</set></think>
+        Home Appliances, understood! 🏠 What is your budget for this category?
+    </template>
+</category>
 
-# User Input
-if prompt := st.chat_input("How can I help you today?"):
-    # Add user message to history
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+<category>
+    <pattern>I WANT *</pattern>
+    <template>
+        I'm sorry, I don't have information on "<star/>" yet. 
+        I can help you with Electronics, Apparel, Footwear, Books, or Home Appliances!
+    </template>
+</category>
 
-    # PROCESS RESPONSE
-    # 1. Check if the input is a pure number (likely a budget)
-    if prompt.strip().isdigit():
-        current_cat = bot.getPredicate("category")
-        if current_cat:
-            bot_response = get_recommendations(current_cat, prompt.strip())
-        else:
-            bot_response = "I need to know which category you're interested in first! Try saying 'I want electronics' or 'Show categories'."
-    else:
-        # 2. Otherwise, use AIML for conversational logic
-        # We send uppercase to AIML to ensure consistent pattern matching
-        bot_response = bot.respond(prompt.upper())
-
-    # Final Fallback if AIML doesn't understand
-    if not bot_response or bot_response.strip() == "":
-        bot_response = "I'm sorry, I didn't quite catch that. Try asking for a category like 'Electronics' or 'Books'."
-
-    # Add bot response to history
-    st.session_state.messages.append({"role": "assistant", "content": bot_response})
-    with st.chat_message("assistant"):
-        st.markdown(bot_response)
+</aiml>
