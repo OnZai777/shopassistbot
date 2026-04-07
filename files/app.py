@@ -22,6 +22,10 @@ st.title("🛍️ Smart Shopping Assistant")
 # -----------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
+else:
+    # Clear old incompatible messages
+    if len(st.session_state.messages) > 0 and isinstance(st.session_state.messages[0], str):
+        st.session_state.messages = []
 
 # -----------------------------
 # Display chat history
