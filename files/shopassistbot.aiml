@@ -2,17 +2,12 @@
 
 <category>
     <pattern>HELLO</pattern>
-    <template>Hey there! 👋 Welcome! Try: I WANT ELECTRONICS</template>
+    <template>Hey there! 👋 Welcome! [cite: 2] Try: I WANT ELECTRONICS</template>
 </category>
 
 <category>
     <pattern>HI</pattern>
     <template><srai>HELLO</srai></template>
-</category>
-
-<category>
-    <pattern>SHOW CATEGORIES</pattern>
-    <template>We have: Electronics, Books, Apparel, and Footwear.</template>
 </category>
 
 <category>
@@ -29,11 +24,6 @@
         <think><set name="category">BOOKS</set></think>
         Nice! What is your budget? [cite: 4]
     </template>
-</category>
-
-<category>
-    <pattern>I WANT *</pattern>
-    <template>Please choose: Electronics, Books, Apparel, or Footwear.</template>
 </category>
 
 </aiml>
