@@ -1,13 +1,13 @@
 import streamlit as st
 import aiml
+import pandas as pd
 
 # -----------------------------
-# 🔧 Normalize user input (NEW)
+# 🔧 Normalize user input
 # -----------------------------
 def normalize_input(text):
     text = text.lower().strip()
 
-    # Synonym mapping
     synonyms = {
         "electronic": "electronics",
         "device": "electronics",
@@ -21,12 +21,10 @@ def normalize_input(text):
 
         "clothes": "apparel",
         "shirt": "apparel",
-        "tshirt": "apparel",
 
         "shoe": "footwear",
         "shoes": "footwear",
-        "sneaker": "footwear",
-        "sneakers": "footwear"
+        "sneaker": "footwear"
     }
 
     words = text.split()
@@ -36,98 +34,104 @@ def normalize_input(text):
 
 
 # -----------------------------
-# Load AIML bot (cached)
+# Load AIML bot
 # -----------------------------
 @st.cache_resource
 def load_bot():
     kernel = aiml.Kernel()
-    kernel.learn("shopassistbot.aiml")  # make sure path is correct
+    kernel.learn("shopassistbot.aiml")
     return kernel
 
 bot = load_bot()
 
+
 # -----------------------------
-# UI Title
+# Load Dataset
+# -----------------------------
+@st.cache_data
+def load_data():
+    df = pd.read_csv("diversified_ecommerce_dataset.csv")
+    return df
+
+data = load_data()
+
+
+# -----------------------------
+# Recommendation Function
+# -----------------------------
+def get_recommendation(category, budget):
+    try:
+        budget = float(budget)
+    except:
+        return "⚠️ Please enter a valid number."
+
+    filtered = data[
+        (data["Category"].str.upper() == category) &
+        (data["Price"] <= budget)
+    ]
+
+    if filtered.empty:
+        return "😅 No products found within your budget."
+
+    filtered = filtered.sort_values(by="Popularity Index", ascending=False)
+
+    top = filtered.head(3)
+
+    result = "✨ Top recommendations:\n\n"
+    for _, row in top.iterrows():
+        result += f"👉 {row['Product Name']} (RM{row['Price']}) ⭐{row['Popularity Index']}\n"
+
+    return result
+
+
+# -----------------------------
+# UI
 # -----------------------------
 st.title("🛍️ Smart Shopping Assistant")
 
-# -----------------------------
-# Session state (chat history)
-# -----------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Fix old format messages
-if len(st.session_state.messages) > 0 and isinstance(st.session_state.messages[0], str):
-    st.session_state.messages = []
-
-# -----------------------------
-# Display chat history
-# -----------------------------
+# Display chat
 for msg in st.session_state.messages:
     if msg["role"] == "user":
         st.markdown(f"👤 **You:** {msg['content']}")
     else:
         st.markdown(f"🤖 **Bot:** {msg['content']}")
 
-# -----------------------------
-# INPUT FORM
-# -----------------------------
+# Input
 with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input("Type your message:")
     submitted = st.form_submit_button("Send")
 
 # -----------------------------
-# Handle input
+# Handle Input
 # -----------------------------
 if submitted and user_input:
     clean_input = normalize_input(user_input)
 
-    # Optional debug (turn on if needed)
-    # st.write("DEBUG:", clean_input)
+    # AIML response
+    response = bot.respond(clean_input)
 
-    # Handle empty intent like "I want"
-    if clean_input.strip() == "I WANT":
-        response = "Please tell me a category 😊 (e.g., electronics, books, apparel, footwear)"
-    else:
-        response = bot.respond(clean_input)
+    # Check if user gave budget (number)
+    if user_input.strip().isdigit():
+        category = bot.getPredicate("category")
+        budget = user_input.strip()
 
-    # -----------------------------
-    # Smart fallback (IMPROVED)
-    # -----------------------------
+        if category:
+            response = get_recommendation(category, budget)
+
+    # Fallback
     if response.strip() == "":
-        user_lower = user_input.lower()
-
-        if any(word in user_lower for word in ["electronic", "phone", "laptop", "gadget"]):
-            response = "Did you mean electronics? Try 'I want electronics' 😊"
-
-        elif any(word in user_lower for word in ["book", "novel", "comic"]):
-            response = "Try 'I want books' 📚"
-
-        elif any(word in user_lower for word in ["shoe", "sneaker"]):
-            response = "Try 'I want footwear' 👟"
-
-        elif any(word in user_lower for word in ["shirt", "clothes"]):
-            response = "Try 'I want apparel' 👕"
-
-        else:
-            response = "😅 Sorry, I didn't understand that. Try 'Show categories' or 'I want electronics'."
+        response = "😅 Try 'I want electronics' or 'Show categories'."
 
     # Save messages
-    st.session_state.messages.append({
-        "role": "user",
-        "content": user_input
-    })
-    st.session_state.messages.append({
-        "role": "bot",
-        "content": response
-    })
+    st.session_state.messages.append({"role": "user", "content": user_input})
+    st.session_state.messages.append({"role": "bot", "content": response})
 
     st.rerun()
 
-# -----------------------------
-# Clear chat button
-# -----------------------------
+# Clear chat
 if st.button("🗑️ Clear Chat"):
     st.session_state.messages = []
     st.rerun()
