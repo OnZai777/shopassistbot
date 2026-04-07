@@ -2,6 +2,40 @@ import streamlit as st
 import aiml
 
 # -----------------------------
+# 🔧 Normalize user input (NEW)
+# -----------------------------
+def normalize_input(text):
+    text = text.lower().strip()
+
+    # Synonym mapping
+    synonyms = {
+        "electronic": "electronics",
+        "device": "electronics",
+        "gadget": "electronics",
+        "phone": "electronics",
+        "laptop": "electronics",
+
+        "book": "books",
+        "novel": "books",
+        "comic": "books",
+
+        "clothes": "apparel",
+        "shirt": "apparel",
+        "tshirt": "apparel",
+
+        "shoe": "footwear",
+        "shoes": "footwear",
+        "sneaker": "footwear",
+        "sneakers": "footwear"
+    }
+
+    words = text.split()
+    words = [synonyms.get(word, word) for word in words]
+
+    return " ".join(words).upper()
+
+
+# -----------------------------
 # Load AIML bot (cached)
 # -----------------------------
 @st.cache_resource
@@ -23,7 +57,7 @@ st.title("🛍️ Smart Shopping Assistant")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Clear old string-format messages (important fix)
+# Fix old format messages
 if len(st.session_state.messages) > 0 and isinstance(st.session_state.messages[0], str):
     st.session_state.messages = []
 
@@ -37,7 +71,7 @@ for msg in st.session_state.messages:
         st.markdown(f"🤖 **Bot:** {msg['content']}")
 
 # -----------------------------
-# INPUT FORM (prevents loop ✅)
+# INPUT FORM
 # -----------------------------
 with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input("Type your message:")
@@ -47,12 +81,37 @@ with st.form("chat_form", clear_on_submit=True):
 # Handle input
 # -----------------------------
 if submitted and user_input:
-    # Convert to uppercase (AIML needs this)
-    response = bot.respond(user_input.upper())
+    clean_input = normalize_input(user_input)
 
-    # Fallback if AIML fails
+    # Optional debug (turn on if needed)
+    # st.write("DEBUG:", clean_input)
+
+    # Handle empty intent like "I want"
+    if clean_input.strip() == "I WANT":
+        response = "Please tell me a category 😊 (e.g., electronics, books, apparel, footwear)"
+    else:
+        response = bot.respond(clean_input)
+
+    # -----------------------------
+    # Smart fallback (IMPROVED)
+    # -----------------------------
     if response.strip() == "":
-        response = "😅 Sorry, I didn't understand that. Try 'Show categories' or 'I want electronics'."
+        user_lower = user_input.lower()
+
+        if any(word in user_lower for word in ["electronic", "phone", "laptop", "gadget"]):
+            response = "Did you mean electronics? Try 'I want electronics' 😊"
+
+        elif any(word in user_lower for word in ["book", "novel", "comic"]):
+            response = "Try 'I want books' 📚"
+
+        elif any(word in user_lower for word in ["shoe", "sneaker"]):
+            response = "Try 'I want footwear' 👟"
+
+        elif any(word in user_lower for word in ["shirt", "clothes"]):
+            response = "Try 'I want apparel' 👕"
+
+        else:
+            response = "😅 Sorry, I didn't understand that. Try 'Show categories' or 'I want electronics'."
 
     # Save messages
     st.session_state.messages.append({
@@ -64,11 +123,10 @@ if submitted and user_input:
         "content": response
     })
 
-    # Refresh UI
     st.rerun()
 
 # -----------------------------
-# Optional: Clear chat button
+# Clear chat button
 # -----------------------------
 if st.button("🗑️ Clear Chat"):
     st.session_state.messages = []
