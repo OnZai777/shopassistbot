@@ -1,42 +1,39 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <aiml version="1.0.1" encoding="UTF-8">
 
 <category>
     <pattern>HELLO</pattern>
-    <template>Hey there! 👋 Welcome! I can help you find products. Try: "I want electronics" or "Show categories".</template>
+    <template>Hey there! 👋 Welcome! Try: I WANT ELECTRONICS</template>
 </category>
 
-<category><pattern>HI</pattern><template><srai>HELLO</srai></template></category>
-<category><pattern>HEY</pattern><template><srai>HELLO</srai></template></category>
+<category>
+    <pattern>HI</pattern>
+    <template><srai>HELLO</srai></template>
+</category>
 
 <category>
     <pattern>SHOW CATEGORIES</pattern>
-    <template>We have: Electronics, Books, Apparel, and Footwear. Which one are you interested in?</template>
+    <template>We have: Electronics, Books, Apparel, and Footwear.</template>
 </category>
 
 <category>
     <pattern>I WANT ELECTRONICS</pattern>
-    <template><think><set name="category">ELECTRONICS</set></think>Great choice! What is your budget for electronics? </template>
+    <template>
+        <think><set name="category">ELECTRONICS</set></think>
+        Great! What is your budget? [cite: 3]
+    </template>
 </category>
 
 <category>
     <pattern>I WANT BOOKS</pattern>
-    <template><think><set name="category">BOOKS</set></think>Nice! What is your budget for books? [cite: 4]</template>
-</category>
-
-<category>
-    <pattern>I WANT APPAREL</pattern>
-    <template><think><set name="category">APPAREL</set></think>Fashionable! What is your budget for apparel? [cite: 5]</template>
-</category>
-
-<category>
-    <pattern>I WANT FOOTWEAR</pattern>
-    <template><think><set name="category">FOOTWEAR</set></think>Excellent! What is your budget for footwear? [cite: 6]</template>
+    <template>
+        <think><set name="category">BOOKS</set></think>
+        Nice! What is your budget? [cite: 4]
+    </template>
 </category>
 
 <category>
     <pattern>I WANT *</pattern>
-    <template>I'm sorry, I don't have recommendations for that yet. Please choose: Electronics, Books, Apparel, or Footwear.</template>
+    <template>Please choose: Electronics, Books, Apparel, or Footwear.</template>
 </category>
 
 </aiml>
