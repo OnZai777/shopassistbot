@@ -2,196 +2,474 @@
 <aiml version="2.0">
 
 <!-- ===================== -->
-<!-- GREETING & CART INIT -->
+<!-- GREETING & CART INIT  -->
 <!-- ===================== -->
 <category>
     <pattern>HELLO</pattern>
     <template>
         <think><set name="cart"></set></think>
-        Hi! I am your AI Shopping Assistant 🤖  
-        I can recommend products based on your needs.  
-        Try: "I want electronics" or "Show categories"
+        Hey there! 👋 Welcome to our Smart Shopping Assistant!
+        I'm here to help you find the perfect product within your budget.
+
+        You can start by saying things like:
+        • "I want electronics"
+        • "Show categories"
+        • "Recommend something for me"
+
+        What are you shopping for today? 🛍️
     </template>
 </category>
 
-<category>
-    <pattern>HI</pattern>
-    <template><srai>HELLO</srai></template>
-</category>
+<category><pattern>HI</pattern><template><srai>HELLO</srai></template></category>
+<category><pattern>HEY</pattern><template><srai>HELLO</srai></template></category>
+<category><pattern>GOOD MORNING</pattern><template><srai>HELLO</srai></template></category>
+<category><pattern>GOOD AFTERNOON</pattern><template><srai>HELLO</srai></template></category>
+<category><pattern>GOOD EVENING</pattern><template><srai>HELLO</srai></template></category>
+<category><pattern>START</pattern><template><srai>HELLO</srai></template></category>
 
 <!-- ===================== -->
-<!-- CATEGORY SELECTION -->
+<!-- CATEGORY SELECTION    -->
 <!-- ===================== -->
 <category>
     <pattern>SHOW CATEGORIES</pattern>
     <template>
-        We have the following categories:  
-        1️⃣ Electronics  
-        2️⃣ Books  
-        3️⃣ Apparel  
-        4️⃣ Footwear  
-        Which one are you interested in?
+        Sure! Here's what we carry: 😊
+
+        1️⃣  Electronics  — Earphones, Speakers, Headphones &amp; more
+        2️⃣  Books        — Textbooks, Comics, Premium titles
+        3️⃣  Apparel      — T-shirts, Sweaters, Dresses &amp; more
+        4️⃣  Footwear     — Sandals, Formal, Hiking &amp; more
+
+        Just say something like "I want books" or "Show me electronics"!
     </template>
 </category>
 
+<category><pattern>CATEGORIES</pattern><template><srai>SHOW CATEGORIES</srai></template></category>
+<category><pattern>WHAT DO YOU HAVE</pattern><template><srai>SHOW CATEGORIES</srai></template></category>
+<category><pattern>WHAT CAN I BUY</pattern><template><srai>SHOW CATEGORIES</srai></template></category>
+
+<!-- ===================== -->
+<!-- INTENT CAPTURE        -->
+<!-- ===================== -->
 <category>
     <pattern>I WANT *</pattern>
     <template>
-        <think><set name="category"><star/></set></think>
-        Great! You are looking for <get name="category"/> 👍  
-        What is your budget? (e.g., 500, 1000, 2000)
+        <think><set name="category"><uppercase><star/></uppercase></set></think>
+        Great choice! You're looking for <star/> 👍
+        What's your budget? Just type a number — like <b>500</b> or <b>1500</b>.
     </template>
 </category>
 
-<!-- SYNONYMS -->
-<category>
-    <pattern>RECOMMEND *</pattern>
-    <template><srai>I WANT <star/></srai></template>
-</category>
-
-<category>
-    <pattern>SUGGEST *</pattern>
-    <template><srai>I WANT <star/></srai></template>
-</category>
+<category><pattern>RECOMMEND *</pattern><template><srai>I WANT <star/></srai></template></category>
+<category><pattern>SUGGEST *</pattern><template><srai>I WANT <star/></srai></template></category>
+<category><pattern>SHOW ME *</pattern><template><srai>I WANT <star/></srai></template></category>
+<category><pattern>LOOKING FOR *</pattern><template><srai>I WANT <star/></srai></template></category>
+<category><pattern>I NEED *</pattern><template><srai>I WANT <star/></srai></template></category>
+<category><pattern>FIND ME *</pattern><template><srai>I WANT <star/></srai></template></category>
+<category><pattern>BUY *</pattern><template><srai>I WANT <star/></srai></template></category>
 
 <!-- ===================== -->
-<!-- BUDGET INPUT -->
+<!-- BUDGET — NATURAL      -->
+<!-- Accepts plain numbers  -->
+<!-- and full sentences     -->
 <!-- ===================== -->
+
+<!-- Full sentence: "My budget is 500" -->
 <category>
     <pattern>MY BUDGET IS *</pattern>
     <template>
         <think><set name="budget"><star/></set></think>
-        Processing your request...  
+        Got it! Let me find the best option for you 🔍
+        <srai>RECOMMEND BASED ON BUDGET</srai>
+    </template>
+</category>
+
+<!-- Natural: "I have 500" -->
+<category>
+    <pattern>I HAVE *</pattern>
+    <template>
+        <think><set name="budget"><star/></set></think>
+        Perfect! Searching within your budget 💰
+        <srai>RECOMMEND BASED ON BUDGET</srai>
+    </template>
+</category>
+
+<!-- Plain number input: "500" -->
+<category>
+    <pattern>_ 0</pattern>
+    <template><think><set name="budget"><input/></set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+
+<category>
+    <pattern>500</pattern>
+    <template><think><set name="budget">500</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>1000</pattern>
+    <template><think><set name="budget">1000</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>1500</pattern>
+    <template><think><set name="budget">1500</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>2000</pattern>
+    <template><think><set name="budget">2000</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>3000</pattern>
+    <template><think><set name="budget">3000</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>5000</pattern>
+    <template><think><set name="budget">5000</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>100</pattern>
+    <template><think><set name="budget">100</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>200</pattern>
+    <template><think><set name="budget">200</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>300</pattern>
+    <template><think><set name="budget">300</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+<category>
+    <pattern>50</pattern>
+    <template><think><set name="budget">50</set></think><srai>RECOMMEND BASED ON BUDGET</srai></template>
+</category>
+
+<!-- Sentence with number: "budget 1000" / "around 1000" -->
+<category>
+    <pattern>BUDGET *</pattern>
+    <template>
+        <think><set name="budget"><star/></set></think>
+        Got it! Searching for the best pick 🔍
+        <srai>RECOMMEND BASED ON BUDGET</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>AROUND *</pattern>
+    <template>
+        <think><set name="budget"><star/></set></think>
+        No problem! Finding something close to that budget 🎯
+        <srai>RECOMMEND BASED ON BUDGET</srai>
+    </template>
+</category>
+
+<category>
+    <pattern>ABOUT *</pattern>
+    <template>
+        <think><set name="budget"><star/></set></think>
+        Sure! Let me look for the best match 🔎
         <srai>RECOMMEND BASED ON BUDGET</srai>
     </template>
 </category>
 
 <!-- ===================== -->
-<!-- SMART RECOMMENDATION -->
+<!-- SMART RECOMMENDATION  -->
 <!-- ===================== -->
 <category>
     <pattern>RECOMMEND BASED ON BUDGET</pattern>
     <template>
+        <think><set name="recommendation">unknown</set></think>
+
         <condition name="category">
 
             <li value="ELECTRONICS">
-                <condition name="budget">
-                    <li value="0..500">Budget Earphones 🎧</li>
-                    <li value="501..1000">Speaker 🔊</li>
-                    <li value="1001..2000">Headphones 🎧</li>
-                    <li>Premium Electronics 💎</li>
-                </condition>
+                <think>
+                    <condition name="budget">
+                        <li value="1">    <set name="recommendation">Budget Earphones 🎧 (~RM50)</set></li>
+                        <li value="50">   <set name="recommendation">Budget Earphones 🎧 (~RM50)</set></li>
+                        <li value="100">  <set name="recommendation">Budget Earphones 🎧 (~RM50)</set></li>
+                        <li value="200">  <set name="recommendation">Budget Earphones 🎧 (~RM50)</set></li>
+                        <li value="300">  <set name="recommendation">Budget Earphones 🎧 (~RM50)</set></li>
+                        <li value="500">  <set name="recommendation">Budget Earphones 🎧 (~RM50)</set></li>
+                        <li value="501">  <set name="recommendation">Portable Speaker 🔊 (~RM800)</set></li>
+                        <li value="600">  <set name="recommendation">Portable Speaker 🔊 (~RM800)</set></li>
+                        <li value="800">  <set name="recommendation">Portable Speaker 🔊 (~RM800)</set></li>
+                        <li value="1000"> <set name="recommendation">Portable Speaker 🔊 (~RM800)</set></li>
+                        <li value="1001"> <set name="recommendation">Premium Headphones 🎧 (~RM1500)</set></li>
+                        <li value="1500"> <set name="recommendation">Premium Headphones 🎧 (~RM1500)</set></li>
+                        <li value="2000"> <set name="recommendation">Premium Headphones 🎧 (~RM1500)</set></li>
+                        <li>              <set name="recommendation">Premium Noise-Cancelling Headset 💎 (~RM3000)</set></li>
+                    </condition>
+                </think>
             </li>
 
             <li value="BOOKS">
-                <condition name="budget">
-                    <li value="0..100">Textbooks 📚</li>
-                    <li value="101..500">Comics 📖</li>
-                    <li>Premium Books 📚🔥</li>
-                </condition>
+                <think>
+                    <condition name="budget">
+                        <li value="50">  <set name="recommendation">Budget Textbook 📚 (~RM30)</set></li>
+                        <li value="100"> <set name="recommendation">Budget Textbook 📚 (~RM30)</set></li>
+                        <li value="101"> <set name="recommendation">Graphic Novel / Comic 📖 (~RM200)</set></li>
+                        <li value="200"> <set name="recommendation">Graphic Novel / Comic 📖 (~RM200)</set></li>
+                        <li value="300"> <set name="recommendation">Graphic Novel / Comic 📖 (~RM200)</set></li>
+                        <li value="500"> <set name="recommendation">Graphic Novel / Comic 📖 (~RM200)</set></li>
+                        <li>             <set name="recommendation">Premium Hardcover Collection 📚🔥 (~RM800)</set></li>
+                    </condition>
+                </think>
             </li>
 
             <li value="APPAREL">
-                <condition name="budget">
-                    <li value="0..500">T-shirt 👕</li>
-                    <li value="501..1000">Sweater 🧥</li>
-                    <li value="1001..2000">Dress 👗</li>
-                    <li>Luxury Apparel ✨</li>
-                </condition>
+                <think>
+                    <condition name="budget">
+                        <li value="50">  <set name="recommendation">Classic T-Shirt 👕 (~RM50)</set></li>
+                        <li value="100"> <set name="recommendation">Classic T-Shirt 👕 (~RM50)</set></li>
+                        <li value="200"> <set name="recommendation">Classic T-Shirt 👕 (~RM50)</set></li>
+                        <li value="300"> <set name="recommendation">Classic T-Shirt 👕 (~RM50)</set></li>
+                        <li value="500"> <set name="recommendation">Classic T-Shirt 👕 (~RM50)</set></li>
+                        <li value="501"> <set name="recommendation">Cosy Sweater 🧥 (~RM800)</set></li>
+                        <li value="800"> <set name="recommendation">Cosy Sweater 🧥 (~RM800)</set></li>
+                        <li value="1000"><set name="recommendation">Cosy Sweater 🧥 (~RM800)</set></li>
+                        <li value="1001"><set name="recommendation">Designer Dress 👗 (~RM1500)</set></li>
+                        <li value="1500"><set name="recommendation">Designer Dress 👗 (~RM1500)</set></li>
+                        <li value="2000"><set name="recommendation">Designer Dress 👗 (~RM1500)</set></li>
+                        <li>             <set name="recommendation">Luxury Fashion Piece ✨ (~RM5000)</set></li>
+                    </condition>
+                </think>
             </li>
 
             <li value="FOOTWEAR">
-                <condition name="budget">
-                    <li value="0..500">Sandals 🩴</li>
-                    <li value="501..1000">Formal Shoes 👞</li>
-                    <li value="1001..2000">Hiking Shoes 🥾</li>
-                    <li>Premium Footwear 👟</li>
-                </condition>
+                <think>
+                    <condition name="budget">
+                        <li value="50">  <set name="recommendation">Comfortable Sandals 🩴 (~RM50)</set></li>
+                        <li value="100"> <set name="recommendation">Comfortable Sandals 🩴 (~RM50)</set></li>
+                        <li value="200"> <set name="recommendation">Comfortable Sandals 🩴 (~RM50)</set></li>
+                        <li value="300"> <set name="recommendation">Comfortable Sandals 🩴 (~RM50)</set></li>
+                        <li value="500"> <set name="recommendation">Comfortable Sandals 🩴 (~RM50)</set></li>
+                        <li value="501"> <set name="recommendation">Classic Formal Shoes 👞 (~RM800)</set></li>
+                        <li value="800"> <set name="recommendation">Classic Formal Shoes 👞 (~RM800)</set></li>
+                        <li value="1000"><set name="recommendation">Classic Formal Shoes 👞 (~RM800)</set></li>
+                        <li value="1001"><set name="recommendation">Trail Hiking Shoes 🥾 (~RM1500)</set></li>
+                        <li value="1500"><set name="recommendation">Trail Hiking Shoes 🥾 (~RM1500)</set></li>
+                        <li value="2000"><set name="recommendation">Trail Hiking Shoes 🥾 (~RM1500)</set></li>
+                        <li>             <set name="recommendation">Premium Branded Sneakers 👟 (~RM3000)</set></li>
+                    </condition>
+                </think>
             </li>
 
-            <li>Sorry 😢 I couldn’t find a match.</li>
+            <li>
+                <think><set name="recommendation">unknown</set></think>
+            </li>
 
         </condition>
 
-        <think><set name="last_recommendation"><get name="category"/> item</set></think>
-        Would you like to add it to your cart? (yes/no)
+        <condition name="recommendation">
+            <li value="unknown">
+                Hmm, I'm not sure what category you're looking for 🤔
+                Could you try: "I want electronics" or "Show categories"?
+            </li>
+            <li>
+                ✨ Based on your budget, I recommend:
+
+                👉  <get name="recommendation"/>
+
+                <think><set name="last_recommendation"><get name="recommendation"/></set></think>
+                Would you like to add it to your cart? (yes / no)
+            </li>
+        </condition>
     </template>
 </category>
 
 <!-- ===================== -->
-<!-- CART MANAGEMENT -->
+<!-- CART MANAGEMENT       -->
 <!-- ===================== -->
 <category>
     <pattern>YES</pattern>
-    <that>Would you like to add it to your cart? (yes/no)</that>
+    <that>Would you like to add it to your cart? (yes / no)</that>
     <template>
         <think>
-            <set name="cart"><get name="cart"/> <get name="last_recommendation"/></set>
+            <set name="cart"><get name="cart"/>, <get name="last_recommendation"/></set>
         </think>
-        ✅ <get name="last_recommendation"/> added to your cart!  
-        You can "View cart" or "Continue shopping".
+        ✅ <get name="last_recommendation"/> has been added to your cart!
+
+        What would you like to do next?
+        • "View cart" — to see your items
+        • "Continue shopping" — to browse more
+        • "Checkout" — to place your order
     </template>
 </category>
 
 <category>
     <pattern>NO</pattern>
-    <that>Would you like to add it to your cart? (yes/no)</that>
+    <that>Would you like to add it to your cart? (yes / no)</that>
     <template>
-        No worries! You can continue shopping or view categories.
+        No problem! I can help you find something else 😊
+        Say "Show categories" or "I want [category]" to keep browsing.
     </template>
 </category>
 
 <category>
     <pattern>VIEW CART</pattern>
     <template>
-        🛒 Your cart contains: <get name="cart"/>  
-        Would you like to checkout? (yes/no)
+        <condition name="cart">
+            <li value="">
+                🛒 Your cart is currently empty.
+                Start shopping by saying "I want electronics" or "Show categories"!
+            </li>
+            <li>
+                🛒 Here's what's in your cart:
+                <get name="cart"/>
+
+                Ready to place your order? Say "Checkout" or "Continue shopping"!
+            </li>
+        </condition>
+    </template>
+</category>
+
+<category><pattern>MY CART</pattern><template><srai>VIEW CART</srai></template></category>
+<category><pattern>SHOW CART</pattern><template><srai>VIEW CART</srai></template></category>
+<category><pattern>CART</pattern><template><srai>VIEW CART</srai></template></category>
+
+<category>
+    <pattern>CHECKOUT</pattern>
+    <template>
+        <condition name="cart">
+            <li value="">
+                🛒 Your cart is empty! Add some items before checking out.
+                Try: "I want footwear" or "Show categories".
+            </li>
+            <li>
+                🧾 Order Summary:
+                <get name="cart"/>
+
+                Shall I confirm and place your order? (yes / no)
+            </li>
+        </condition>
     </template>
 </category>
 
 <category>
     <pattern>YES</pattern>
-    <that>Would you like to checkout? (yes/no)</that>
+    <that>Shall I confirm and place your order? (yes / no)</that>
     <template>
-        🧾 Your order (<get name="cart"/>) has been placed successfully!  
-        Thank you for shopping with us 🎉  
+        🎉 Your order has been placed successfully!
+
+        📦 Items ordered: <get name="cart"/>
+
+        Thank you for shopping with us! We hope to see you again soon 😊
         <think><set name="cart"></set></think>
     </template>
 </category>
 
 <category>
     <pattern>NO</pattern>
-    <that>Would you like to checkout? (yes/no)</that>
+    <that>Shall I confirm and place your order? (yes / no)</that>
     <template>
-        Sure! Continue shopping and tell me what else you want.
+        No worries! Your cart is still saved.
+        Take your time and say "Checkout" when you're ready 😊
+    </template>
+</category>
+
+<category>
+    <pattern>CONTINUE SHOPPING</pattern>
+    <template>
+        Great! Let's keep going 🛍️
+        What are you looking for? Say "I want [category]" or "Show categories".
+    </template>
+</category>
+
+<category>
+    <pattern>CLEAR CART</pattern>
+    <template>
+        <think><set name="cart"></set></think>
+        🗑️ Your cart has been cleared. Starting fresh!
+        What would you like to shop for today?
     </template>
 </category>
 
 <!-- ===================== -->
-<!-- SMALL TALK -->
+<!-- HELP                  -->
+<!-- ===================== -->
+<category>
+    <pattern>HELP</pattern>
+    <template>
+        Here's what I can do for you 🤖:
+
+        🛒  Shopping
+        • "I want electronics" / "I need books"
+        • "Show categories"
+        • "My budget is 1000" or just type "1000"
+
+        🧺  Cart
+        • "View cart" — see your items
+        • "Checkout" — place your order
+        • "Clear cart" — remove all items
+
+        💬  Other
+        • "How are you"
+        • "Thank you"
+
+        What can I help you with? 😊
+    </template>
+</category>
+
+<category><pattern>WHAT CAN YOU DO</pattern><template><srai>HELP</srai></template></category>
+<category><pattern>COMMANDS</pattern><template><srai>HELP</srai></template></category>
+
+<!-- ===================== -->
+<!-- SMALL TALK            -->
 <!-- ===================== -->
 <category>
     <pattern>HOW ARE YOU</pattern>
     <template>
-        I'm great! 😊 Ready to help you shop. What would you like today?
+        I'm doing great, thanks for asking! 😊
+        I'm ready and excited to help you find something amazing today.
+        What are you shopping for?
     </template>
 </category>
+
+<category>
+    <pattern>WHAT IS YOUR NAME</pattern>
+    <template>
+        I'm ShopBot 🤖 — your personal AI shopping assistant!
+        I'm here to help you find the best products within your budget.
+        What can I help you find today?
+    </template>
+</category>
+
+<category><pattern>WHO ARE YOU</pattern><template><srai>WHAT IS YOUR NAME</srai></template></category>
 
 <category>
     <pattern>THANK YOU</pattern>
     <template>
-        You're welcome! Happy shopping! 🛍️
+        You're very welcome! 🙏 Happy shopping!
+        Feel free to come back anytime you need help 🛍️
     </template>
 </category>
 
+<category><pattern>THANKS</pattern><template><srai>THANK YOU</srai></template></category>
+<category><pattern>THANK YOU SO MUCH</pattern><template><srai>THANK YOU</srai></template></category>
+
+<category>
+    <pattern>BYE</pattern>
+    <template>
+        Goodbye! 👋 It was great helping you today.
+        Come back anytime you need to shop. See you soon! 😊
+    </template>
+</category>
+
+<category><pattern>GOODBYE</pattern><template><srai>BYE</srai></template></category>
+<category><pattern>SEE YOU</pattern><template><srai>BYE</srai></template></category>
+
 <!-- ===================== -->
-<!-- FALLBACK -->
+<!-- FALLBACK              -->
 <!-- ===================== -->
 <category>
     <pattern>*</pattern>
     <template>
-        Sorry, I didn't understand that 😅  
-        Try: "I want electronics", "Show categories", or "My budget is 1000"
+        Hmm, I didn't quite catch that 😅
+        Here are some things you can try:
+        • "I want electronics"
+        • "Show categories"
+        • "My budget is 1000" or just type a number like "1000"
+        • "Help" — to see all commands
+
+        What are you looking for today? 😊
     </template>
 </category>
 
