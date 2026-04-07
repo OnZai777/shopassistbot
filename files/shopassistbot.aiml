@@ -1,70 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <aiml version="1.0.1" encoding="UTF-8">
 
-<!-- ===================== -->
-<!-- NORMALIZATION (NEW)   -->
-<!-- ===================== -->
-
+<!-- NORMALIZATION -->
 <category><pattern>ELECTRONIC</pattern><template><srai>ELECTRONICS</srai></template></category>
 <category><pattern>BOOK</pattern><template><srai>BOOKS</srai></template></category>
 <category><pattern>SHOE</pattern><template><srai>FOOTWEAR</srai></template></category>
-<category><pattern>SHOES</pattern><template><srai>FOOTWEAR</srai></template></category>
-<category><pattern>CLOTHES</pattern><template><srai>APPAREL</srai></template></category>
 
-<!-- Direct category -->
-<category><pattern>ELECTRONICS</pattern><template><srai>I WANT ELECTRONICS</srai></template></category>
-<category><pattern>BOOKS</pattern><template><srai>I WANT BOOKS</srai></template></category>
-<category><pattern>APPAREL</pattern><template><srai>I WANT APPAREL</srai></template></category>
-<category><pattern>FOOTWEAR</pattern><template><srai>I WANT FOOTWEAR</srai></template></category>
-
-<!-- ===================== -->
 <!-- GREETING -->
-<!-- ===================== -->
 <category>
     <pattern>HELLO</pattern>
     <template>
         <think><set name="cart"></set></think>
-        Hey there! 👋 Welcome to our Smart Shopping Assistant!
+        Hey there! 👋 Welcome!
 
         Try:
-        • "I want electronics"
-        • "Show categories"
-
-        What are you shopping for? 🛍️
+        • I want electronics
+        • Show categories
     </template>
 </category>
 
 <category><pattern>HI</pattern><template><srai>HELLO</srai></template></category>
-<category><pattern>HEY</pattern><template><srai>HELLO</srai></template></category>
 
-<!-- ===================== -->
 <!-- CATEGORY -->
-<!-- ===================== -->
 <category>
     <pattern>SHOW CATEGORIES</pattern>
     <template>
         Categories:
-
-        1️⃣ Electronics  
-        2️⃣ Books  
-        3️⃣ Apparel  
-        4️⃣ Footwear  
-
-        Say: "I want electronics"
+        Electronics, Books, Apparel, Footwear
     </template>
 </category>
 
-<!-- ===================== -->
-<!-- INTENT (IMPROVED) -->
-<!-- ===================== -->
-
-<!-- EXACT category mapping -->
+<!-- CATEGORY SET -->
 <category>
     <pattern>I WANT ELECTRONICS</pattern>
     <template>
         <think><set name="category">ELECTRONICS</set></think>
-        Great! Electronics 👍  
-        What's your budget?
+        Great! What's your budget?
     </template>
 </category>
 
@@ -72,8 +43,7 @@
     <pattern>I WANT BOOKS</pattern>
     <template>
         <think><set name="category">BOOKS</set></think>
-        Nice! Books 📚  
-        What's your budget?
+        Nice! What's your budget?
     </template>
 </category>
 
@@ -81,8 +51,7 @@
     <pattern>I WANT APPAREL</pattern>
     <template>
         <think><set name="category">APPAREL</set></think>
-        Apparel 👕 good choice!  
-        What's your budget?
+        Good choice! What's your budget?
     </template>
 </category>
 
@@ -90,115 +59,28 @@
     <pattern>I WANT FOOTWEAR</pattern>
     <template>
         <think><set name="category">FOOTWEAR</set></think>
-        Footwear 👟 nice!  
-        What's your budget?
+        Nice! What's your budget?
     </template>
 </category>
 
-<!-- fallback intent -->
+<!-- UNKNOWN CATEGORY -->
 <category>
     <pattern>I WANT *</pattern>
     <template>
-        I’m not sure about "<star/>" 🤔  
-        Try:
-        • electronics  
-        • books  
-        • apparel  
-        • footwear
+        Please choose:
+        electronics, books, apparel, footwear
     </template>
 </category>
 
-<!-- ===================== -->
 <!-- BUDGET -->
-<!-- ===================== -->
-
-<category>
-    <pattern>* 0</pattern>
-    <template>
-        <think><set name="budget"><input/></set></think>
-        <srai>RECOMMEND</srai>
-    </template>
-</category>
-
-<category>
-    <pattern>MY BUDGET IS *</pattern>
-    <template>
-        <think><set name="budget"><star/></set></think>
-        <srai>RECOMMEND</srai>
-    </template>
-</category>
-
-<!-- ===================== -->
-<!-- RECOMMEND -->
-<!-- ===================== -->
-
-<category>
-    <pattern>RECOMMEND</pattern>
-    <template>
-
-        <condition name="category">
-
-            <li value="ELECTRONICS">
-                🎧 Budget Earphones (~RM50)
-            </li>
-
-            <li value="BOOKS">
-                📚 Graphic Novel (~RM200)
-            </li>
-
-            <li value="APPAREL">
-                👕 T-Shirt (~RM50)
-            </li>
-
-            <li value="FOOTWEAR">
-                👟 Sneakers (~RM800)
-            </li>
-
-            <li>
-                Please choose a category first 😊
-            </li>
-
-        </condition>
-
-        <think><set name="last_recommendation">item</set></think>
-        Add to cart? (yes / no)
-    </template>
-</category>
-
-<!-- ===================== -->
-<!-- CART -->
-<!-- ===================== -->
-
-<category>
-    <pattern>YES</pattern>
-    <that>Add to cart? (yes / no)</that>
-    <template>
-        ✅ Added to cart!
-
-        Say:
-        • View cart
-        • Checkout
-    </template>
-</category>
-
-<category>
-    <pattern>VIEW CART</pattern>
-    <template>
-        🛒 Cart feature active!
-    </template>
-</category>
-
-<!-- ===================== -->
-<!-- FALLBACK -->
-<!-- ===================== -->
-
 <category>
     <pattern>*</pattern>
     <template>
-        😅 Try:
-        • I want electronics  
-        • Show categories  
-        • 1000
+        <think>
+            <condition>
+                <li><set name="budget"><input/></set></li>
+            </condition>
+        </think>
     </template>
 </category>
 
