@@ -3,101 +3,68 @@ import aiml
 import pandas as pd
 import os
 
-# --- 1. CONFIGURATION & LOADING ---
-st.set_page_config(page_title="ShopAssist Pro", page_icon="🛒", layout="centered")
-
-# Paths for files
+# Set up paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-AIML_FILE = os.path.join(BASE_DIR, "shopassistbot.aiml")
-# Update this path if your CSV is in a subfolder like 'files/'
-DATA_CSV = os.path.join(BASE_DIR, "diversified_ecommerce_dataset.csv")
+AIML_PATH = os.path.join(BASE_DIR, "shopassistbot.aiml")
+DATA_PATH = os.path.join(BASE_DIR, "diversified_ecommerce_dataset.csv")
 
 @st.cache_resource
-def load_aiml_kernel():
-    """Initializes the AIML kernel and learns the logic file."""
+def load_bot():
     kernel = aiml.Kernel()
-    if os.path.exists(AIML_FILE):
-        kernel.learn(AIML_FILE)
-    else:
-        st.error(f"❌ Error: {AIML_FILE} not found. Please ensure the file exists.")
+    if os.path.exists(AIML_PATH):
+        kernel.learn(AIML_PATH)
     return kernel
 
 @st.cache_data
-def load_ecommerce_data():
-    """Loads and caches the product dataset."""
-    if os.path.exists(DATA_CSV):
-        return pd.read_csv(DATA_CSV)
-    else:
-        st.error(f"❌ Error: Dataset not found at {DATA_CSV}")
-        return pd.DataFrame()
+def load_data():
+    if os.path.exists(DATA_PATH):
+        return pd.read_csv(DATA_PATH)
+    return pd.DataFrame()
 
-# Initialize Bot and Data
-bot = load_aiml_kernel()
-df = load_ecommerce_data()
+bot = load_bot()
+df = load_data()
 
-# --- 2. LOGIC FUNCTIONS ---
-def get_recommendations(category, budget):
-    """Filters data based on category and budget, sorted by popularity."""
+def get_recommendation(category, budget):
     try:
-        max_price = float(budget)
-        # Case-insensitive category match
-        results = df[
-            (df['Category'].str.upper() == category.upper()) & 
-            (df['Price'] <= max_price)
-        ]
-        
+        budget_val = float(budget)
+        # Filter by category and price from your dataset
+        results = df[(df['Category'].str.upper() == category.upper()) & (df['Price'] <= budget_val)]
         if results.empty:
-            return f"I couldn't find any {category} within a budget of RM{max_price:.2f}. Would you like to try a different budget or category?"
+            return f"I couldn't find any {category} under RM{budget_val}."
         
-        # Sort by popularity (descending) and take top 3
-        top_picks = results.sort_values(by="Popularity Index", ascending=False).head(3)
-        
-        response = f"✨ Here are my top {category} picks under RM{max_price:.2f}:\n\n"
-        for _, row in top_picks.iterrows():
-            response += f"🛍️ **{row['Product Name']}**\n"
-            response += f"💰 Price: RM{row['Price']:.2f} | ⭐ Popularity: {row['Popularity Index']}/100\n\n"
-        return response
-    except ValueError:
-        return "⚠️ Please provide a valid numerical budget (e.g., 500)."
+        # Sort by popularity index
+        top = results.sort_values(by="Popularity Index", ascending=False).head(3)
+        msg = f"✨ Top picks for {category}:\n\n"
+        for _, row in top.iterrows():
+            msg += f"👉 {row['Product Name']} (RM{row['Price']}) ⭐{row['Popularity Index']}\n"
+        return msg
+    except:
+        return "Please enter a valid budget."
 
-# --- 3. CHAT INTERFACE ---
-st.title("🛒 ShopAssist AI")
-st.markdown("Your personal shopping assistant for Electronics, Apparel, Footwear, Books, and more.")
+st.title("🛍️ ShopAssist AI")
 
-# Initialize message history
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Hello! 👋 I'm ShopAssist. I can help you find products. Try saying **'Show categories'** or **'I want electronics'**."}]
+    st.session_state.messages = []
 
-# Display chat history
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-# User Input
-if prompt := st.chat_input("How can I help you today?"):
-    # Add user message to history
+if prompt := st.chat_input("Type 'Hello'"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # PROCESS RESPONSE
-    # 1. Check if the input is a pure number (likely a budget)
+    # Logic: Budget vs AIML conversation
     if prompt.strip().isdigit():
-        current_cat = bot.getPredicate("category")
-        if current_cat:
-            bot_response = get_recommendations(current_cat, prompt.strip())
-        else:
-            bot_response = "I need to know which category you're interested in first! Try saying 'I want electronics' or 'Show categories'."
+        cat = bot.getPredicate("category")
+        response = get_recommendation(cat, prompt.strip()) if cat else "What category are you looking for?"
     else:
-        # 2. Otherwise, use AIML for conversational logic
-        # We send uppercase to AIML to ensure consistent pattern matching
-        bot_response = bot.respond(prompt.upper())
+        response = bot.respond(prompt.upper())
 
-    # Final Fallback if AIML doesn't understand
-    if not bot_response or bot_response.strip() == "":
-        bot_response = "I'm sorry, I didn't quite catch that. Try asking for a category like 'Electronics' or 'Books'."
+    if not response:
+        response = "I'm still learning! Try 'Show categories'."
 
-    # Add bot response to history
-    st.session_state.messages.append({"role": "assistant", "content": bot_response})
+    st.session_state.messages.append({"role": "assistant", "content": response})
     with st.chat_message("assistant"):
-        st.markdown(bot_response)
+        st.markdown(response)
