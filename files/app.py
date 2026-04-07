@@ -1,94 +1,67 @@
 import streamlit as st
 import aiml
 import pandas as pd
+import os
 
 # -----------------------------
-# 🔧 Normalize user input
-# -----------------------------
-def normalize_input(text):
-    # We remove .upper() here to let the AIML kernel handle case-insensitivity 
-    # and focus only on synonym replacement.
-    text = text.lower().strip()
-
-    synonyms = {
-        "electronic": "electronics",
-        "device": "electronics",
-        "gadget": "electronics",
-        "phone": "electronics",
-        "laptop": "electronics",
-        "book": "books",
-        "novel": "books",
-        "comic": "books",
-        "clothes": "apparel",
-        "shirt": "apparel",
-        "shoe": "footwear",
-        "shoes": "footwear",
-        "sneaker": "footwear"
-    }
-
-    words = text.split()
-    words = [synonyms.get(word, word) for word in words]
-    return " ".join(words)
-
-
-# -----------------------------
-# Load AIML bot
+# 🤖 Load AIML bot
 # -----------------------------
 @st.cache_resource
 def load_bot():
     kernel = aiml.Kernel()
-    # Ensure the filename matches exactly
-    kernel.learn("shopassistbot.aiml")
+    # Check if the file exists to prevent silent crashes
+    if os.path.exists("shopassistbot.aiml"):
+        kernel.learn("shopassistbot.aiml")
+    else:
+        st.error("❌ 'shopassistbot.aiml' not found! Please ensure the file is in the same folder.")
     return kernel
 
 bot = load_bot()
 
-
 # -----------------------------
-# Load Dataset
+# 📊 Load Dataset
 # -----------------------------
 @st.cache_data
 def load_data():
-    # Make sure this path exists in your directory
-    df = pd.read_csv("files/diversified_ecommerce_dataset.csv")
-    return df
+    try:
+        # Ensure your CSV is in a folder named 'files'
+        df = pd.read_csv("files/diversified_ecommerce_dataset.csv")
+        return df
+    except Exception as e:
+        st.error(f"❌ Dataset error: {e}")
+        return pd.DataFrame()
 
 data = load_data()
 
-
 # -----------------------------
-# Recommendation Function
+# 💡 Recommendation Logic
 # -----------------------------
 def get_recommendation(category, budget):
     try:
-        budget = float(budget)
+        budget_val = float(budget)
     except:
-        return "⚠️ Please enter a valid numerical budget (e.g., 500)."
+        return "⚠️ Please enter a valid number for your budget."
 
-    # Filter data based on category (case-insensitive) and price
+    # Filter by category and price limit
     filtered = data[
         (data["Category"].str.upper() == category.upper()) &
-        (data["Price"] <= budget)
+        (data["Price"] <= budget_val)
     ]
 
     if filtered.empty:
-        return f"😅 No products found in {category} within RM{budget}."
+        return f"😅 Sorry, I couldn't find any {category} under RM{budget_val}."
 
-    # Sort by popularity and get top 3
-    filtered = filtered.sort_values(by="Popularity Index", ascending=False)
-    top = filtered.head(3)
+    # Sort by Popularity and take top 3
+    top = filtered.sort_values(by="Popularity Index", ascending=False).head(3)
 
-    result = f"✨ Top recommendations for {category}:\n\n"
+    result = f"✨ Here are the top {category} recommendations within your budget:\n\n"
     for _, row in top.iterrows():
-        result += f"👉 {row['Product Name']} (RM{row['Price']}) ⭐{row['Popularity Index']}\n"
-
+        result += f"👉 **{row['Product Name']}** - RM{row['Price']} (Rating: {row['Popularity Index']})\n"
     return result
 
-
 # -----------------------------
-# UI Setup
+# 🖥️ User Interface
 # -----------------------------
-st.set_page_config(page_title="Smart Shopping Assistant", page_icon="🛍️")
 st.title("🛍️ Smart Shopping Assistant")
 
 if "messages" not in st.session_state:
@@ -97,40 +70,32 @@ if "messages" not in st.session_state:
 # Display chat history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+        st.write(msg["content"])
 
-# Input
-user_input = st.chat_input("Type your message (e.g., 'I want electronics' or 'Show categories')")
+# User Chat Input
+user_input = st.chat_input("Type 'Hello', 'Show categories', or 'I want electronics'...")
 
-# -----------------------------
-# Handle Input
-# -----------------------------
 if user_input:
-    # 1. Normalize for synonyms
-    clean_input = normalize_input(user_input)
-
-    # 2. Get response from AIML
-    response = bot.respond(clean_input)
-
-    # 3. Check if input is a budget (digit) and we have a category stored
-    if user_input.strip().isdigit():
-        current_category = bot.getPredicate("category")
-        if current_category:
-            response = get_recommendation(current_category, user_input.strip())
-        else:
-            response = "What category are you interested in first? (Electronics, Books, etc.)"
-
-    # 4. Fallback if AIML doesn't match anything
-    if not response or response.strip() == "":
-        response = "😅 Try saying 'I want electronics' or 'Show categories' to get started!"
-
-    # Save and Refresh
+    # 1. Show user message
     st.session_state.messages.append({"role": "user", "content": user_input})
+    
+    # 2. Process with AIML
+    # We send raw input; aiml-python handles case-insensitivity automatically.
+    response = bot.respond(user_input)
+
+    # 3. Check for Recommendation Trigger
+    # If the user enters a number and we have a category stored in AIML memory
+    if user_input.strip().isdigit():
+        stored_category = bot.getPredicate("category")
+        if stored_category:
+            response = get_recommendation(stored_category, user_input.strip())
+        else:
+            response = "I'm not sure what you're looking for yet. Try saying 'I want electronics' first!"
+
+    # 4. Fallback for empty responses
+    if not response or response.strip() == "":
+        response = "😅 I'm not sure how to help with that. Try 'Show categories'!"
+
+    # 5. Show bot response
     st.session_state.messages.append({"role": "assistant", "content": response})
     st.rerun()
-
-# Sidebar controls
-with st.sidebar:
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.messages = []
-        st.rerun()
